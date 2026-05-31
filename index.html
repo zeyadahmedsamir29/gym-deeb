@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym Deeb Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container mt-4 main-container shadow-lg">
+        <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-secondary-subtle pb-3">
+            <h2 class="fw-bold text-dark"><i class="bi bi-dumbbell text-primary fs-3"></i> Gym Deeb Dashboard</h2>
+            <div>
+                <button class="btn btn-outline-secondary shadow-sm me-2 rounded-pill px-3" id="darkModeBtn" onclick="toggleDarkMode()">
+                    <i class="bi bi-moon-stars"></i> Dark Mode
+                </button>
+                <button class="btn btn-dark shadow-sm me-2 rounded-pill px-3" id="authBtn" onclick="toggleAuth()">
+                    <i class="bi bi-lock-fill"></i> Finance Panel
+                </button>
+                <button class="btn btn-success shadow-sm me-2 rounded-pill px-3" onclick="exportToCSV()">
+                    <i class="bi bi-file-earmark-excel"></i> Export CSV
+                </button>
+                <button class="btn btn-primary shadow-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#addMemberModal">
+                    <i class="bi bi-person-plus-fill"></i> Add Member
+                </button>
+            </div>
+        </div>
+
+        <div class="row mb-4 text-center">
+            <div class="col-md-3 mb-2">
+                <div class="card bg-primary text-white shadow-sm stat-card border-0 rounded-4">
+                    <div class="card-body py-3">
+                        <h6 class="card-title opacity-75">Members</h6>
+                        <h3 class="fw-bold mb-0" id="totalCount">0</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-2">
+                <div class="card bg-success text-white shadow-sm stat-card border-0 rounded-4">
+                    <div class="card-body py-3">
+                        <h6 class="card-title opacity-75">Active Subscriptions</h6>
+                        <h3 class="fw-bold mb-0" id="activeCount">0</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-2">
+                <div class="card bg-danger text-white shadow-sm stat-card border-0 rounded-4">
+                    <div class="card-body py-3">
+                        <h6 class="card-title opacity-75">Expired Members</h6>
+                        <h3 class="fw-bold mb-0" id="expiredCount">0</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-2">
+                <div class="card bg-warning text-white shadow-sm stat-card border-0 rounded-4">
+                    <div class="card-body py-3">
+                        <h6 class="card-title opacity-75">Expiring Soon</h6>
+                        <h3 class="fw-bold mb-0" id="expiringCount">0</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-2 secure-data" id="revenueCard">
+                <div class="card bg-warning text-dark shadow stat-card border-0 rounded-4 revenue-glow">
+                    <div class="card-body py-3">
+                        <h6 class="card-title opacity-75"><i class="bi bi-wallet2"></i> Treasury</h6>
+                        <h3 class="fw-bold mb-0"><span id="totalRevenue">0</span> EGP</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-6 mx-auto">
+                <div class="input-group shadow-sm rounded-pill overflow-hidden">
+                    <span class="input-group-text bg-white border-0 ps-4"><i class="bi bi-search text-primary"></i></span>
+                    <input type="text" class="form-control border-0 py-2" id="searchInput" placeholder="Search by name or phone...">
+                </div>
+            </div>
+        </div>
+
+        <div id="financePanel" class="card shadow-sm border-0 rounded-4 overflow-hidden bg-white bg-opacity-95 mb-4" style="display:none;">
+            <div class="card-header bg-secondary text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Finance Details</h5>
+                    <span class="badge bg-light text-dark" id="financeTotalLabel">Total Paid: 0 EGP</span>
+                </div>
+            </div>
+            <div class="card-body p-3">
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0 text-center align-middle">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>Paid</th>
+                            </tr>
+                        </thead>
+                        <tbody id="financeBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0 rounded-4 overflow-hidden bg-white bg-opacity-75">
+            <div class="table-responsive">
+                <table class="table mb-0 text-center align-middle table-borderless" id="membersTable">
+                    <thead class="table-dark bg-opacity-75">
+                        <tr>
+                            <th>Image</th>
+                            <th>Name</th>
+                            <th>Phone</th>
+                            <th>End Date</th>
+                            <th class="secure-data text-warning">Paid</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="loginModal" tabindex="-1">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4 shadow-lg">
+                <div class="modal-header bg-dark text-white rounded-top-4 border-0">
+                    <h5 class="modal-title fs-6"><i class="bi bi-shield-lock"></i> Owner Login</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <input type="email" id="adminEmail" class="form-control rounded-pill text-center" placeholder="Email">
+                    </div>
+                    <div class="mb-3">
+                        <input type="password" id="adminPassword" class="form-control rounded-pill text-center" placeholder="Password">
+                    </div>
+                    <div id="loginError" class="text-danger small mb-2 text-center d-none">Invalid login details</div>
+                    <button class="btn btn-dark w-100 rounded-pill" onclick="checkLogin()">Open Finance</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addMemberModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4 shadow-lg">
+                <div class="modal-header bg-primary text-white border-0 rounded-top-4">
+                    <h5 class="modal-title" id="memberModalTitle">Add New Member</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="addForm">
+                        <input type="hidden" id="editMemberId">
+                        <div class="mb-3"><input type="file" id="mImage" class="form-control rounded-pill" accept="image/*"></div>
+                        <div class="mb-3"><input type="text" id="mName" class="form-control rounded-pill" placeholder="Full name" required></div>
+                        <div class="mb-3"><input type="tel" id="mPhone" class="form-control rounded-pill" placeholder="Phone number" required></div>
+                        <div class="row">
+                            <div class="col-6 mb-3"><input type="date" id="mDate" class="form-control rounded-pill" required></div>
+                            <div class="col-6 mb-3">
+                                <select id="mPackage" class="form-select rounded-pill">
+                                    <option value="350" data-months="1">1 month - 350 EGP</option>
+                                    <option value="900" data-months="3">3 months - 900 EGP</option>
+                                    <option value="3000" data-months="12">1 year - 3000 EGP</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary px-4 w-100 rounded-pill mt-2" id="memberSubmitButton">Save Member</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="renewModal" tabindex="-1">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow-lg">
+                <div class="modal-header bg-success text-white rounded-top-4 border-0">
+                    <h5 class="modal-title fs-6">Renew Subscription</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center p-4">
+                    <p id="renewName" class="fw-bold mb-3 text-primary"></p>
+                    <select id="renewPackage" class="form-select rounded-pill mb-3 text-center">
+                        <option value="350" data-months="1">1 month - 350 EGP</option>
+                        <option value="900" data-months="3">3 months - 900 EGP</option>
+                        <option value="3000" data-months="12">1 year - 3000 EGP</option>
+                    </select>
+                    <input type="hidden" id="renewId">
+                    <button class="btn btn-success w-100 rounded-pill" onclick="confirmRenew()">Pay and Renew</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="successToast" class="toast align-items-center text-bg-success border-0 rounded-3 shadow-lg" role="alert">
+            <div class="d-flex">
+                <div class="toast-body fw-bold" id="toastMessage">Operation successful!</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
